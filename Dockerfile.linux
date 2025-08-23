@@ -1,0 +1,53 @@
+FROM python:3.10-slim
+
+RUN apt-get update && apt-get install -y \
+    gcc \
+    python3-dev \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy requirements and source
+COPY requirements.txt .
+COPY main.py .
+COPY qt_setup.py .
+COPY src/ ./src/
+COPY assets/ ./assets/
+
+# Install Python packages
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+RUN pip install pyinstaller
+
+# Build command
+CMD ["pyinstaller", "--onedir", "--windowed", \
+     "--name=MarkLex-Linux", \
+     "--add-data=src:src", \
+     "--hidden-import=src.main_window", \
+     "--hidden-import=src.widgets.welcome_widget", \
+     "--hidden-import=src.widgets.setup_widget", \
+     "--hidden-import=src.widgets.lexicon_widget", \
+     "--hidden-import=src.widgets.analysis_widget", \
+     "--hidden-import=src.models.embedding_manager", \
+     "--hidden-import=src.models.text_processor", \
+     "--hidden-import=src.models.lexicon_manager", \
+     "--hidden-import=src.utils.app_dirs", \
+     "--hidden-import=src.styles.modern_style", \
+     "--hidden-import=pandas._libs.tslibs.timedeltas", \
+     "--hidden-import=pandas._libs.tslibs.np_datetime", \
+     "--hidden-import=pandas._libs.tslibs.nattype", \
+     "--hidden-import=pandas._libs.skiplist", \
+     "--hidden-import=numpy.core._methods", \
+     "--hidden-import=numpy.lib.format", \
+     "--hidden-import=sklearn.utils._cython_blas", \
+     "--hidden-import=sklearn.neighbors._typedefs", \
+     "--hidden-import=gensim.models.word2vec", \
+     "--hidden-import=gensim.models.keyedvectors", \
+     "main.py"]
