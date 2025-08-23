@@ -596,3 +596,23 @@ footer {
 .doc-card {
     animation: fadeInUp 0.6s ease forwards;
 }
+/* Coming Soon styles */
+.download-card.coming-soon {
+    opacity: 0.7;
+    background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+}
+
+.download-card.coming-soon .download-icon {
+    filter: grayscale(50%);
+}
+
+.btn-disabled {
+    background: #d1d5db;
+    color: #6b7280;
+    padding: 12px 32px;
+    border-radius: 8px;
+    display: inline-block;
+    font-weight: 600;
+    cursor: not-allowed;
+    text-align: center;
+}

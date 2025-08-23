@@ -61,4 +61,4 @@ embeddings_*
 # Test files
 test_*.py
 debug_*.py
-examine_*.py
+examine_*.py*.dmg
