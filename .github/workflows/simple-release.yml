@@ -1,0 +1,221 @@
+name: Simple Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        type: string
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-20.04
+            platform: linux
+            artifact: MarkLex-Linux-x86_64.tar.gz
+          - os: windows-2022
+            platform: windows  
+            artifact: MarkLex-Windows-x86_64.zip
+          - os: macos-12
+            platform: macos-intel
+            artifact: MarkLex-macOS-x86_64.zip
+          - os: macos-14
+            platform: macos-arm
+            artifact: MarkLex-macOS-arm64.zip
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install system dependencies (Linux)
+      if: matrix.platform == 'linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgl1-mesa-glx libegl1-mesa libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6
+        
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Build Linux
+      if: matrix.platform == 'linux'
+      run: |
+        pyinstaller MarkLex-Linux.spec
+        cd dist && tar -czf MarkLex-Linux-x86_64.tar.gz MarkLex/
+        
+    - name: Build Windows
+      if: matrix.platform == 'windows'
+      run: |
+        pyinstaller MarkLex-Windows.spec
+        cd dist && powershell Compress-Archive -Path MarkLex -DestinationPath MarkLex-Windows-x86_64.zip
+        
+    - name: Build macOS
+      if: matrix.platform == 'macos-intel' || matrix.platform == 'macos-arm'
+      run: |
+        pyinstaller MarkLex.spec
+        cd dist
+        if [[ "${{ matrix.platform }}" == "macos-arm" ]]; then
+          zip -r MarkLex-macOS-arm64.zip MarkLex.app/
+        else
+          zip -r MarkLex-macOS-x86_64.zip MarkLex.app/
+        fi
+        
+    - name: Generate checksum
+      shell: bash
+      run: |
+        cd dist
+        if [[ "${{ matrix.os }}" == "windows-2022" ]]; then
+          powershell "Get-FileHash ${{ matrix.artifact }} -Algorithm SHA256 | Select-Object Hash | ForEach-Object { \$_.Hash.ToLower() + '  ${{ matrix.artifact }}' }" > checksum.txt
+        else
+          shasum -a 256 ${{ matrix.artifact }} > checksum.txt
+        fi
+        
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.platform }}-build
+        path: |
+          dist/${{ matrix.artifact }}
+          dist/checksum.txt
+          
+  create-release:
+    needs: build-and-release
+    runs-on: ubuntu-latest
+    if: always() && (needs.build-and-release.result == 'success')
+    permissions:
+      contents: write
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Get version
+      id: version
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: ./artifacts
+        
+    - name: Prepare release files
+      run: |
+        mkdir release-files
+        find ./artifacts -name "*.tar.gz" -o -name "*.zip" | xargs -I {} cp {} release-files/
+        find ./artifacts -name "checksum.txt" -exec cat {} \; > release-files/checksums.txt
+        ls -la release-files/
+        
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.version.outputs.VERSION }}
+        release_name: MarkLex Desktop ${{ steps.version.outputs.VERSION }}
+        body: |
+          # MarkLex Desktop ${{ steps.version.outputs.VERSION }}
+          
+          ## Download
+          
+          Choose the version for your platform:
+          
+          - **macOS Apple Silicon**: MarkLex-macOS-arm64.zip
+          - **macOS Intel**: MarkLex-macOS-x86_64.zip  
+          - **Windows**: MarkLex-Windows-x86_64.zip
+          - **Linux**: MarkLex-Linux-x86_64.tar.gz
+          
+          ## Installation
+          
+          ### macOS
+          1. Download and extract the ZIP file
+          2. Open MarkLex.app
+          3. If blocked by security, right-click and select "Open"
+          
+          ### Windows  
+          1. Download and extract the ZIP file
+          2. Run MarkLex.exe
+          
+          ### Linux
+          1. Download and extract: `tar -xzf MarkLex-Linux-x86_64.tar.gz`
+          2. Run: `./MarkLex/MarkLex`
+          
+          ## Verification
+          Check file integrity with the provided checksums.txt file.
+          
+          Built automatically with GitHub Actions.
+        draft: false
+        prerelease: false
+        
+    - name: Upload Linux build
+      if: always()
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./release-files/MarkLex-Linux-x86_64.tar.gz
+        asset_name: MarkLex-Linux-x86_64.tar.gz
+        asset_content_type: application/gzip
+        
+    - name: Upload Windows build
+      if: always()
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./release-files/MarkLex-Windows-x86_64.zip
+        asset_name: MarkLex-Windows-x86_64.zip
+        asset_content_type: application/zip
+        
+    - name: Upload macOS Intel build
+      if: always()
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./release-files/MarkLex-macOS-x86_64.zip
+        asset_name: MarkLex-macOS-x86_64.zip
+        asset_content_type: application/zip
+        
+    - name: Upload macOS ARM build
+      if: always()
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./release-files/MarkLex-macOS-arm64.zip
+        asset_name: MarkLex-macOS-arm64.zip
+        asset_content_type: application/zip
+        
+    - name: Upload checksums
+      if: always()
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./release-files/checksums.txt
+        asset_name: checksums.txt
+        asset_content_type: text/plain

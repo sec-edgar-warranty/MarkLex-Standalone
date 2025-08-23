@@ -1,0 +1,100 @@
+name: Debug Build Issues
+
+on:
+  workflow_dispatch:
+
+jobs:
+  debug-ubuntu:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      
+    - name: Setup Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.9'
+        
+    - name: Check Python and pip
+      run: |
+        echo "Python version:"
+        python --version
+        echo "Pip version:"
+        pip --version
+        echo "Python path:"
+        which python
+        
+    - name: Install system dependencies
+      run: |
+        echo "Installing system dependencies..."
+        sudo apt-get update
+        sudo apt-get install -y python3-dev python3-pip
+        sudo apt-get install -y libxcb-xinerama0 libxcb-cursor0 libgl1-mesa-glx libegl1-mesa
+        echo "✅ System dependencies installed"
+        
+    - name: Install Python dependencies step by step
+      run: |
+        echo "Upgrading pip..."
+        python -m pip install --upgrade pip
+        echo "✅ Pip upgraded"
+        
+        echo "Installing PyQt6..."
+        pip install PyQt6==6.8.0 PyQt6-sip==13.8.0
+        echo "✅ PyQt6 installed"
+        
+        echo "Testing PyQt6 import..."
+        python -c "import PyQt6.QtWidgets; print('✅ PyQt6 imports work')"
+        
+        echo "Installing other dependencies..."
+        pip install pandas numpy
+        echo "✅ Basic scientific packages installed"
+        
+        pip install PyInstaller==6.11.1
+        echo "✅ PyInstaller installed"
+        
+    - name: Check project structure
+      run: |
+        echo "Project files:"
+        ls -la
+        echo ""
+        echo "Source files:"
+        find src -name "*.py" | head -10
+        echo ""
+        echo "Main file exists:"
+        ls -la main.py
+        
+    - name: Test imports
+      run: |
+        echo "Testing basic imports..."
+        python -c "import sys; print(f'Python {sys.version}')"
+        python -c "import PyQt6; print('✅ PyQt6 works')"
+        
+        echo "Testing project imports..."
+        python -c "
+import sys
+sys.path.append('.')
+sys.path.append('src')
+try:
+    import src.main_window
+    print('✅ main_window imports work')
+except Exception as e:
+    print(f'❌ main_window import failed: {e}')
+    import traceback
+    traceback.print_exc()
+"
+        
+    - name: Test PyInstaller
+      run: |
+        echo "Testing basic PyInstaller command..."
+        pyinstaller --version
+        
+        echo "Creating minimal spec..."
+        pyi-makespec main.py
+        
+        echo "Contents of main.spec:"
+        cat main.spec
+        
+    - name: Success
+      run: |
+        echo "🎉 Debug completed! Check the logs above for any failures."
