@@ -2,6 +2,15 @@
 Main application window with tabbed interface
 """
 
+import os
+import sys
+
+# Set Qt platform for CI/headless environments before importing QtWidgets
+if ('CI' in os.environ or 'GITHUB_ACTIONS' in os.environ or 
+    'DISPLAY' not in os.environ or os.environ.get('DISPLAY') == ''):
+    os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+    os.environ['QT_LOGGING_RULES'] = '*=false'
+
 from PyQt6.QtWidgets import (QMainWindow, QTabWidget, QVBoxLayout, 
                             QWidget, QMenuBar, QStatusBar, QMessageBox,
                             QApplication)

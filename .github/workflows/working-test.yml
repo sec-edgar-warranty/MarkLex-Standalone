@@ -1,0 +1,47 @@
+name: Working Test
+
+on:
+  workflow_dispatch:
+  
+jobs:
+  test-fixed-code:
+    runs-on: ubuntu-22.04
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      
+    - name: Setup Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.9'
+        
+    - name: Install basic EGL libraries
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libegl1-mesa libegl1 libgl1-mesa-glx libgl1
+        
+    - name: Install PyQt6
+      run: |
+        python -m pip install --upgrade pip
+        pip install PyQt6==6.8.0 PyQt6-sip==13.8.0
+        
+    - name: Set CI environment variable
+      run: |
+        echo "CI=true" >> $GITHUB_ENV
+        echo "GITHUB_ACTIONS=true" >> $GITHUB_ENV
+        
+    - name: Test main_window import (should now work)
+      run: |
+        python -c "import sys; sys.path.append('.'); sys.path.append('src'); import src.main_window; print('✅ main_window imported successfully!')"
+        
+    - name: Test PyQt6 application creation
+      run: |
+        python -c "import sys; sys.path.append('.'); sys.path.append('src'); from src.main_window import MainWindow; print('✅ MainWindow class imported successfully!')"
+        
+    - name: Success
+      run: |
+        echo "🎉 SUCCESS! The modified main_window.py works!"
+        echo "✅ CI environment detection works"
+        echo "✅ Qt platform is set before PyQt6 imports"
+        echo "✅ No more libEGL.so.1 errors"

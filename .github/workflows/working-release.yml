@@ -1,0 +1,188 @@
+name: Working Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-22.04
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      
+    - name: Setup Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.9'
+        
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libegl1-mesa libegl1 libgl1-mesa-glx libgl1 xvfb
+        
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Build Linux executable
+      env:
+        CI: true
+        GITHUB_ACTIONS: true
+      run: |
+        pyinstaller --noconfirm --onefile --add-data "src:src" --name "MarkLex" main.py
+        cd dist && tar -czf MarkLex-Linux-x86_64.tar.gz MarkLex
+        
+    - name: Upload Linux build
+      uses: actions/upload-artifact@v3
+      with:
+        name: linux-build
+        path: dist/MarkLex-Linux-x86_64.tar.gz
+
+  build-windows:
+    runs-on: windows-2022
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      
+    - name: Setup Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.9'
+        
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Build Windows executable
+      run: |
+        pyinstaller --noconfirm --onefile --windowed --add-data "src;src" --name "MarkLex" main.py
+        cd dist && powershell Compress-Archive -Path MarkLex.exe -DestinationPath MarkLex-Windows-x86_64.zip
+        
+    - name: Upload Windows build
+      uses: actions/upload-artifact@v3
+      with:
+        name: windows-build
+        path: dist/MarkLex-Windows-x86_64.zip
+
+  build-macos:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      
+    - name: Setup Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.9'
+        
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Build macOS app
+      run: |
+        pyinstaller MarkLex.spec
+        cd dist && zip -r MarkLex-macOS-x86_64.zip MarkLex.app/
+        
+    - name: Upload macOS build
+      uses: actions/upload-artifact@v3
+      with:
+        name: macos-build
+        path: dist/MarkLex-macOS-x86_64.zip
+
+  build-macos-arm:
+    runs-on: macos-14
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      
+    - name: Setup Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.9'
+        
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Build macOS ARM app
+      run: |
+        pyinstaller MarkLex.spec
+        cd dist && zip -r MarkLex-macOS-arm64.zip MarkLex.app/
+        
+    - name: Upload macOS ARM build
+      uses: actions/upload-artifact@v3
+      with:
+        name: macos-arm-build
+        path: dist/MarkLex-macOS-arm64.zip
+
+  create-release:
+    needs: [build-linux, build-windows, build-macos, build-macos-arm]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: ./builds
+        
+    - name: Prepare release files
+      run: |
+        mkdir release-files
+        find ./builds -name "*.tar.gz" -o -name "*.zip" | xargs -I {} cp {} release-files/
+        cd release-files && sha256sum * > checksums.txt
+        ls -la release-files/
+        
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ github.event.inputs.version }}
+        name: MarkLex Desktop ${{ github.event.inputs.version }}
+        body: |
+          # MarkLex Desktop ${{ github.event.inputs.version }}
+          
+          ## Professional Marketing Lexicon Creation & Text Analysis
+          
+          Cross-platform desktop application for creating marketing lexicons using advanced Word2Vec models.
+          
+          ### Downloads
+          
+          - **Linux**: MarkLex-Linux-x86_64.tar.gz
+          - **Windows**: MarkLex-Windows-x86_64.zip
+          - **macOS Intel**: MarkLex-macOS-x86_64.zip
+          - **macOS Apple Silicon**: MarkLex-macOS-arm64.zip
+          
+          ### Installation
+          
+          #### Linux
+          ```bash
+          tar -xzf MarkLex-Linux-x86_64.tar.gz
+          ./MarkLex
+          ```
+          
+          #### Windows
+          Extract ZIP file and run `MarkLex.exe`
+          
+          #### macOS
+          Extract ZIP file and open `MarkLex.app` (right-click → Open if security warning appears)
+          
+          ### Verification
+          Use `checksums.txt` to verify download integrity.
+          
+          Built automatically with GitHub Actions.
+        files: release-files/*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

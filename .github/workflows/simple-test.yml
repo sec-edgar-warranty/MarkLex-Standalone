@@ -30,45 +30,11 @@ jobs:
       run: |
         export QT_QPA_PLATFORM=offscreen
         export QT_LOGGING_RULES="*=false"
-        python -c "
-import os
-# CRITICAL: Set platform BEFORE any PyQt6 imports
-os.environ['QT_QPA_PLATFORM'] = 'offscreen'
-os.environ['QT_LOGGING_RULES'] = '*=false'
-
-# Now test imports
-import sys
-sys.path.append('.')
-sys.path.append('src')
-
-# Test PyQt6 basic import
-from PyQt6.QtWidgets import QApplication
-print('✅ PyQt6.QtWidgets imported successfully')
-
-# Test our CI-friendly wrapper
-import src.main_window_ci
-print('✅ main_window imported via CI wrapper')
-"
+        python -c "import os; os.environ['QT_QPA_PLATFORM'] = 'offscreen'; os.environ['QT_LOGGING_RULES'] = '*=false'; import sys; sys.path.append('.'); sys.path.append('src'); from PyQt6.QtWidgets import QApplication; print('✅ PyQt6.QtWidgets imported successfully')"
 
     - name: Test direct import with proper setup
       run: |
-        python -c "
-import os
-import sys
-
-# Set environment FIRST
-os.environ['QT_QPA_PLATFORM'] = 'offscreen'
-os.environ['QT_LOGGING_RULES'] = '*=false'  
-os.environ['CI'] = 'true'
-
-# Add paths
-sys.path.append('.')
-sys.path.append('src')
-
-# Now import should work
-import src.main_window
-print('✅ Direct main_window import worked!')
-"
+        python -c "import os; import sys; os.environ['QT_QPA_PLATFORM'] = 'offscreen'; os.environ['QT_LOGGING_RULES'] = '*=false'; os.environ['CI'] = 'true'; sys.path.append('.'); sys.path.append('src'); import src.main_window; print('✅ Direct main_window import worked!')"
         
     - name: Success
       run: |
