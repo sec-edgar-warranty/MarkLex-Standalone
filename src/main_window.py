@@ -2,22 +2,13 @@
 Main application window with tabbed interface
 """
 
-import os
+# CRITICAL: Import qt_setup first to set platform before any PyQt6 imports
 import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+import qt_setup  # This sets QT_QPA_PLATFORM before any PyQt6 imports
 
-# Set Qt platform for CI/headless environments before importing QtWidgets
-# Always use offscreen platform in CI environments or when no display is available
-if (os.environ.get('CI') == 'true' or 
-    'GITHUB_ACTIONS' in os.environ or 
-    'RUNNER_OS' in os.environ or
-    'DISPLAY' not in os.environ or 
-    os.environ.get('DISPLAY') == '' or
-    os.environ.get('DISPLAY') == ':0' or
-    not hasattr(sys, 'ps1')):  # Not in interactive Python
-    print("🔧 Setting Qt platform to offscreen for CI/headless environment")
-    os.environ['QT_QPA_PLATFORM'] = 'offscreen'
-    os.environ['QT_LOGGING_RULES'] = '*=false'
-
+# Now import PyQt6 - the platform should be set correctly by qt_setup
 from PyQt6.QtWidgets import (QMainWindow, QTabWidget, QVBoxLayout, 
                             QWidget, QMenuBar, QStatusBar, QMessageBox,
                             QApplication)

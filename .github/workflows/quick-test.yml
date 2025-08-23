@@ -48,13 +48,21 @@ jobs:
         echo "DISPLAY=$DISPLAY"
         python -c "import os; print('Python sees CI:', os.environ.get('CI')); print('Python sees GITHUB_ACTIONS:', os.environ.get('GITHUB_ACTIONS')); print('Python sees RUNNER_OS:', os.environ.get('RUNNER_OS'))"
         
-    - name: Test main_window with CI environment
+    - name: Test qt_setup module first
       env:
         CI: true
         GITHUB_ACTIONS: true
       run: |
-        echo "Testing main_window import with modified code..."
-        python -c "import sys; sys.path.append('src'); import main_window; print('SUCCESS: main_window imported without errors!')"
+        echo "Testing qt_setup module..."
+        python -c "import qt_setup; print('SUCCESS: qt_setup imported and Qt platform configured!')"
+        
+    - name: Test main_window with CI environment  
+      env:
+        CI: true
+        GITHUB_ACTIONS: true
+      run: |
+        echo "Testing main_window import with qt_setup..."
+        python -c "import qt_setup; import sys; sys.path.append('src'); import main_window; print('SUCCESS: main_window imported without errors!')"
         
     - name: Test MainWindow class creation
       env:
