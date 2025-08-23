@@ -74,18 +74,8 @@ jobs:
         python -c "import PyQt6; print('✅ PyQt6 works')"
         
         echo "Testing project imports..."
-        python -c "
-import sys
-sys.path.append('.')
-sys.path.append('src')
-try:
-    import src.main_window
-    print('✅ main_window imports work')
-except Exception as e:
-    print(f'❌ main_window import failed: {e}')
-    import traceback
-    traceback.print_exc()
-"
+        python -c "import sys; sys.path.append('.'); sys.path.append('src')" || echo "Path setup failed"
+        python -c "import src.main_window; print('✅ main_window imports work')" || echo "❌ main_window import failed"
         
     - name: Test PyInstaller
       run: |
