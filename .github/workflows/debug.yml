@@ -1,10 +1,8 @@
-name: Debug Build Issues
+name: Debug Build Issues (DISABLED)
 
 on:
+  # Disabled - libEGL issues identified, use "Test System Dependencies Fix" instead
   workflow_dispatch:
-  push:
-    branches: [ main ]
-    paths: [ '.github/workflows/debug.yml' ]
 
 jobs:
   debug-ubuntu:

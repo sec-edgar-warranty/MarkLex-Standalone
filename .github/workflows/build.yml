@@ -1,10 +1,11 @@
-name: Build and Test
+name: Build and Test (DISABLED)
 
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
+  # Disabled - use "Fixed Release" instead
+  # push:
+  #   branches: [ main, develop ]
+  # pull_request:
+  #   branches: [ main ]
   workflow_dispatch:
 
 jobs:

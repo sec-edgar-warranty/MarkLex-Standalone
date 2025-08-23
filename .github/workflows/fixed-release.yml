@@ -58,14 +58,7 @@ jobs:
       run: |
         export QT_QPA_PLATFORM=offscreen
         export DISPLAY=:99
-        python -c "
-import os
-os.environ['QT_QPA_PLATFORM'] = 'offscreen'
-from PyQt6.QtWidgets import QApplication
-app = QApplication([])
-print('✅ PyQt6 GUI works in headless mode')
-app.quit()
-"
+        python -c "import os; os.environ['QT_QPA_PLATFORM'] = 'offscreen'; from PyQt6.QtWidgets import QApplication; app = QApplication([]); print('✅ PyQt6 GUI works in headless mode'); app.quit()"
         
     - name: Build Linux executable
       run: |
