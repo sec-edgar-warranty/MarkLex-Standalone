@@ -36,7 +36,9 @@ jobs:
         CI: true
         GITHUB_ACTIONS: true
       run: |
-        pyinstaller --noconfirm --onefile --add-data "src:src" --name "MarkLex" main.py
+        echo "Building Linux version with qt_setup fix..."
+        python -c "import qt_setup; print('Qt platform configured for Linux build')"
+        pyinstaller --noconfirm --onefile --add-data "src:src" --add-data "qt_setup.py:." --name "MarkLex" main.py
         cd dist && tar -czf MarkLex-Linux-x86_64.tar.gz MarkLex
         
     - name: Upload Linux build
@@ -64,7 +66,9 @@ jobs:
         
     - name: Build Windows executable
       run: |
-        pyinstaller --noconfirm --onefile --windowed --add-data "src;src" --name "MarkLex" main.py
+        echo "Building Windows version with qt_setup fix..."
+        python -c "import qt_setup; print('Qt platform configured for Windows build')"
+        pyinstaller --noconfirm --onefile --windowed --add-data "src;src" --add-data "qt_setup.py;." --name "MarkLex" main.py
         cd dist && powershell Compress-Archive -Path MarkLex.exe -DestinationPath MarkLex-Windows-x86_64.zip
         
     - name: Upload Windows build
