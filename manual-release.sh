@@ -36,11 +36,11 @@ fi
 echo "📊 Creating checksums..."
 cd dist
 if [[ -f "checksums.txt" ]]; then rm checksums.txt; fi
-for file in *.zip *.tar.gz 2>/dev/null; do
-    if [[ -f "$file" ]]; then
+for file in *.zip *.tar.gz; do
+    if [[ -f "$file" && "$file" != "*.zip" && "$file" != "*.tar.gz" ]]; then
         shasum -a 256 "$file" >> checksums.txt
     fi
-done
+done 2>/dev/null
 cd ..
 
 # Create release notes
