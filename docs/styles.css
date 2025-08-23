@@ -251,6 +251,45 @@ section h2 {
     background: white;
 }
 
+.build-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin: 2rem 0;
+    padding: 1rem;
+    background: var(--background-light);
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.build-badge {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.build-desc {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.download-options {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin: 1rem 0;
+}
+
+.download-options .btn {
+    flex: 1;
+    min-width: 100px;
+    font-size: 0.9rem;
+}
+
 .download-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));

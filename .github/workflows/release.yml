@@ -1,0 +1,264 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Run basic tests
+      run: |
+        python -c "import src.main_window; print('Main window module imported successfully')"
+
+  build-all-platforms:
+    needs: test
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            spec_file: MarkLex-Linux.spec
+            artifact_name: MarkLex-Linux-x86_64.tar.gz
+            build_command: |
+              pyinstaller MarkLex-Linux.spec
+              cd dist
+              tar -czf MarkLex-Linux-x86_64.tar.gz MarkLex
+            system_deps: |
+              sudo apt-get update
+              sudo apt-get install -y \
+                libxcb-xinerama0 \
+                libxcb-cursor0 \
+                libgl1-mesa-glx \
+                libegl1-mesa \
+                libxrandr2 \
+                libxss1 \
+                libxcursor1 \
+                libxcomposite1 \
+                libasound2 \
+                libxi6 \
+                libxtst6
+          
+          - os: windows-latest
+            platform: windows
+            spec_file: MarkLex-Windows.spec
+            artifact_name: MarkLex-Windows-x86_64.zip
+            build_command: |
+              pyinstaller MarkLex-Windows.spec
+              cd dist
+              powershell Compress-Archive -Path MarkLex -DestinationPath MarkLex-Windows-x86_64.zip
+            system_deps: echo "No additional system dependencies needed"
+          
+          - os: macos-latest
+            platform: macos-intel
+            spec_file: MarkLex.spec
+            artifact_name: MarkLex-macOS-x86_64.zip
+            build_command: |
+              pyinstaller MarkLex.spec
+              cd dist
+              zip -r MarkLex-macOS-x86_64.zip MarkLex.app
+            system_deps: echo "No additional system dependencies needed"
+          
+          - os: macos-14
+            platform: macos-arm
+            spec_file: MarkLex.spec
+            artifact_name: MarkLex-macOS-arm64.zip
+            build_command: |
+              pyinstaller MarkLex.spec
+              cd dist
+              zip -r MarkLex-macOS-arm64.zip MarkLex.app
+            system_deps: echo "No additional system dependencies needed"
+
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install system dependencies
+      run: ${{ matrix.system_deps }}
+        
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Build application
+      run: ${{ matrix.build_command }}
+        
+    - name: Generate checksums
+      shell: bash
+      run: |
+        cd dist
+        if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+          certutil -hashfile ${{ matrix.artifact_name }} SHA256 | find /v ":" | find /v "CertUtil" > ${{ matrix.platform }}-checksums.txt
+        else
+          shasum -a 256 ${{ matrix.artifact_name }} > ${{ matrix.platform }}-checksums.txt
+        fi
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.platform }}-build
+        path: |
+          dist/${{ matrix.artifact_name }}
+          dist/${{ matrix.platform }}-checksums.txt
+
+  create-release:
+    needs: build-all-platforms
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: ./artifacts
+        
+    - name: Prepare release assets
+      run: |
+        mkdir -p release-assets
+        find ./artifacts -name "*.tar.gz" -o -name "*.zip" -o -name "*checksums.txt" | xargs -I {} cp {} release-assets/
+        ls -la release-assets/
+        
+    - name: Combine checksums
+      run: |
+        cd release-assets
+        cat *-checksums.txt > checksums.txt
+        rm *-checksums.txt
+        
+    - name: Get version
+      id: get_version
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Generate release notes
+      id: release_notes
+      run: |
+        cat > release-notes.md << 'EOF'
+        # MarkLex Desktop ${{ steps.get_version.outputs.VERSION }}
+        
+        ## Professional Marketing Lexicon Creation & Text Analysis
+        
+        MarkLex Desktop is a powerful PyQt6 application for creating marketing lexicons and performing sophisticated text analysis using Word2Vec embeddings.
+        
+        ### ✨ Features
+        
+        - **Intelligent Lexicon Creation**: Build comprehensive marketing lexicons using advanced Word2Vec models
+        - **Text Analysis**: Analyze documents and classify content using your custom lexicons
+        - **Multiple File Formats**: Import from and export to CSV, Excel, and text files
+        - **Research-Grade**: Suitable for academic research and professional marketing analysis
+        - **Cross-Platform**: Available for macOS, Windows, and Linux
+        
+        ### 📥 Download Instructions
+        
+        Choose the appropriate version for your operating system:
+        
+        #### macOS
+        - **Apple Silicon (M1/M2/M3)**: `MarkLex-macOS-arm64.zip` ⭐ *Recommended for newer Macs*
+        - **Intel**: `MarkLex-macOS-x86_64.zip`
+        
+        **Installation**: Extract the ZIP file and open `MarkLex.app`. If you see a security warning, right-click the app and select "Open".
+        
+        #### Windows
+        - **Windows 10/11**: `MarkLex-Windows-x86_64.zip`
+        
+        **Installation**: Extract the ZIP file and run `MarkLex.exe`.
+        
+        #### Linux
+        - **Ubuntu/Debian/etc**: `MarkLex-Linux-x86_64.tar.gz`
+        
+        **Installation**: 
+        ```bash
+        tar -xzf MarkLex-Linux-x86_64.tar.gz
+        ./MarkLex/MarkLex
+        ```
+        
+        ### 🔧 Technical Requirements
+        
+        - **macOS**: macOS 10.15 or later (Catalina+)
+        - **Windows**: Windows 10/11 (x64)
+        - **Linux**: Ubuntu 18.04+ or equivalent
+        
+        ### 🔐 Verification
+        
+        Verify your download integrity using the provided checksums:
+        ```bash
+        # macOS/Linux
+        shasum -a 256 -c checksums.txt
+        
+        # Windows PowerShell
+        Get-FileHash MarkLex-Windows-x86_64.zip -Algorithm SHA256
+        ```
+        
+        ### 🚀 Getting Started
+        
+        1. Download the appropriate version for your platform
+        2. Extract and run the application
+        3. Follow the built-in setup wizard
+        4. Visit the [documentation](https://sec-edgar-warranty.github.io/MarkLex-Standalone) for detailed instructions
+        
+        ### 📊 Build Information
+        
+        - Built with PyQt6 for modern UI
+        - Includes NLTK data for text processing
+        - Self-contained executable (no Python installation required)
+        - Built using GitHub Actions for consistent, reproducible builds
+        
+        ---
+        
+        🤖 **Automated Release**: This release was built and published automatically using GitHub Actions.
+        
+        For support and documentation, visit: https://sec-edgar-warranty.github.io/MarkLex-Standalone
+        EOF
+        
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.get_version.outputs.VERSION }}
+        name: MarkLex Desktop ${{ steps.get_version.outputs.VERSION }}
+        body_path: release-notes.md
+        files: release-assets/*
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Update latest release
+      run: |
+        echo "✅ Release ${{ steps.get_version.outputs.VERSION }} created successfully!"
+        echo "📦 Assets included:"
+        ls -la release-assets/
+        echo ""
+        echo "🔗 Release URL: https://github.com/${{ github.repository }}/releases/tag/${{ steps.get_version.outputs.VERSION }}"

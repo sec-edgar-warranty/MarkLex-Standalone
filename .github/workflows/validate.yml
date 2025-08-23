@@ -1,0 +1,52 @@
+name: Validate Workflows
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Validate workflow syntax
+      run: |
+        echo "✅ Validating workflow files..."
+        
+        # Check if workflow files are valid YAML
+        for file in .github/workflows/*.yml .github/workflows/*.yaml; do
+          if [[ -f "$file" ]]; then
+            echo "Checking $file..."
+            python -c "import yaml; yaml.safe_load(open('$file'))" || exit 1
+            echo "✅ $file is valid YAML"
+          fi
+        done
+        
+    - name: Check required files
+      run: |
+        echo "📋 Checking required files..."
+        
+        required_files=(
+          "requirements.txt"
+          "main.py"
+          "MarkLex.spec"
+          "MarkLex-Windows.spec"
+          "MarkLex-Linux.spec"
+        )
+        
+        for file in "${required_files[@]}"; do
+          if [[ -f "$file" ]]; then
+            echo "✅ $file exists"
+          else
+            echo "❌ $file is missing"
+            exit 1
+          fi
+        done
+        
+    - name: Validate Python imports
+      run: |
+        python -c "import yaml; print('✅ PyYAML available')"
+        echo "✅ Workflow validation completed successfully!"
