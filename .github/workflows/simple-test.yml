@@ -1,0 +1,78 @@
+name: Simple EGL Test
+
+on:
+  workflow_dispatch:
+  
+jobs:
+  simple-test:
+    runs-on: ubuntu-22.04
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      
+    - name: Setup Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.9'
+        
+    - name: Install minimal dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libegl1-mesa libegl1 libgl1-mesa-glx libgl1 xvfb
+        
+    - name: Install PyQt6
+      run: |
+        python -m pip install --upgrade pip
+        pip install PyQt6==6.8.0 PyQt6-sip==13.8.0
+        
+    - name: Test with environment variables set first
+      run: |
+        export QT_QPA_PLATFORM=offscreen
+        export QT_LOGGING_RULES="*=false"
+        python -c "
+import os
+# CRITICAL: Set platform BEFORE any PyQt6 imports
+os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+os.environ['QT_LOGGING_RULES'] = '*=false'
+
+# Now test imports
+import sys
+sys.path.append('.')
+sys.path.append('src')
+
+# Test PyQt6 basic import
+from PyQt6.QtWidgets import QApplication
+print('✅ PyQt6.QtWidgets imported successfully')
+
+# Test our CI-friendly wrapper
+import src.main_window_ci
+print('✅ main_window imported via CI wrapper')
+"
+
+    - name: Test direct import with proper setup
+      run: |
+        python -c "
+import os
+import sys
+
+# Set environment FIRST
+os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+os.environ['QT_LOGGING_RULES'] = '*=false'  
+os.environ['CI'] = 'true'
+
+# Add paths
+sys.path.append('.')
+sys.path.append('src')
+
+# Now import should work
+import src.main_window
+print('✅ Direct main_window import worked!')
+"
+        
+    - name: Success
+      run: |
+        echo "🎉 SUCCESS! Found the solution:"
+        echo "✅ Set QT_QPA_PLATFORM=offscreen BEFORE importing PyQt6"
+        echo "✅ Use environment variables at Python script start"
+        echo "✅ main_window imports work when platform is set first"
