@@ -44,10 +44,11 @@ jobs:
         pip install pyinstaller
         
     - name: Build with PyInstaller
+      shell: bash
       run: |
         pyinstaller --clean --onedir --windowed \
-          --name=MarkLex-${{ matrix.name }} \
-          --add-data "src${{ runner.os == 'Windows' && ';' || ':' }}src" \
+          --name="MarkLex-${{ matrix.name }}" \
+          --add-data "src:src" \
           --hidden-import=src.main_window \
           --hidden-import=src.widgets.welcome_widget \
           --hidden-import=src.widgets.setup_widget \
@@ -61,15 +62,11 @@ jobs:
           --hidden-import=pandas._libs.tslibs.timedeltas \
           --hidden-import=pandas._libs.tslibs.np_datetime \
           --hidden-import=pandas._libs.tslibs.nattype \
-          --hidden-import=pandas._libs.skiplist \
           --hidden-import=numpy.core._methods \
           --hidden-import=numpy.lib.format \
           --hidden-import=sklearn.utils._cython_blas \
-          --hidden-import=sklearn.neighbors._typedefs \
           --hidden-import=gensim.models.word2vec \
           --hidden-import=gensim.models.keyedvectors \
-          ${{ matrix.os == 'windows-latest' && '--icon=assets/MarkLex-icon.png' || '' }} \
-          ${{ matrix.os == 'macos-latest' && '--icon=assets/MarkLex-icon.icns' || '' }} \
           main.py
           
     - name: Create Archive (Windows)
