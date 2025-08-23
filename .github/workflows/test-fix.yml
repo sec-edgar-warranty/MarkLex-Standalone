@@ -1,6 +1,7 @@
-name: Test System Dependencies Fix
+name: Test System Dependencies Fix (DISABLED)
 
 on:
+  # DISABLED - use "Working Test" instead
   workflow_dispatch:
   
 jobs:
