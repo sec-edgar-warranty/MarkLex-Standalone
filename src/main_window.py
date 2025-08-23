@@ -6,8 +6,15 @@ import os
 import sys
 
 # Set Qt platform for CI/headless environments before importing QtWidgets
-if ('CI' in os.environ or 'GITHUB_ACTIONS' in os.environ or 
-    'DISPLAY' not in os.environ or os.environ.get('DISPLAY') == ''):
+# Always use offscreen platform in CI environments or when no display is available
+if (os.environ.get('CI') == 'true' or 
+    'GITHUB_ACTIONS' in os.environ or 
+    'RUNNER_OS' in os.environ or
+    'DISPLAY' not in os.environ or 
+    os.environ.get('DISPLAY') == '' or
+    os.environ.get('DISPLAY') == ':0' or
+    not hasattr(sys, 'ps1')):  # Not in interactive Python
+    print("🔧 Setting Qt platform to offscreen for CI/headless environment")
     os.environ['QT_QPA_PLATFORM'] = 'offscreen'
     os.environ['QT_LOGGING_RULES'] = '*=false'
 

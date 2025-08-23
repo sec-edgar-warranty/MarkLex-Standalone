@@ -18,15 +18,35 @@ jobs:
       with:
         python-version: '3.9'
         
-    - name: Install minimal EGL libraries
+    - name: Install comprehensive EGL libraries
       run: |
         sudo apt-get update
-        sudo apt-get install -y libegl1 libgl1
+        sudo apt-get install -y \
+          libegl1 \
+          libegl1-mesa \
+          libgl1 \
+          libgl1-mesa-glx \
+          libglx-mesa0 \
+          libglapi-mesa \
+          xvfb \
+          libxcb-glx0 \
+          libxcb-dri2-0 \
+          libxcb-dri3-0 \
+          libdrm2
         
-    - name: Install PyQt6
+    - name: Install all dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install PyQt6==6.8.0 PyQt6-sip==13.8.0
+        pip install -r requirements.txt
+        
+    - name: Debug environment variables
+      run: |
+        echo "Environment variables:"
+        echo "CI=$CI"
+        echo "GITHUB_ACTIONS=$GITHUB_ACTIONS" 
+        echo "RUNNER_OS=$RUNNER_OS"
+        echo "DISPLAY=$DISPLAY"
+        python -c "import os; print('Python sees CI:', os.environ.get('CI')); print('Python sees GITHUB_ACTIONS:', os.environ.get('GITHUB_ACTIONS')); print('Python sees RUNNER_OS:', os.environ.get('RUNNER_OS'))"
         
     - name: Test main_window with CI environment
       env:
