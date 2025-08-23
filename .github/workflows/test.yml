@@ -1,9 +1,9 @@
-name: Test Build
+name: Test Build (DISABLED - OLD VERSION)
 
 on:
+  # DISABLED - This workflow uses old code without qt_setup fix
+  # Use "Quick Test" instead
   workflow_dispatch:
-  push:
-    branches: [ main ]
 
 jobs:
   test:

@@ -1,11 +1,8 @@
-name: Build and Test (DISABLED)
+name: Build and Test (DISABLED - OLD VERSION)
 
 on:
-  # Disabled - use "Fixed Release" instead
-  # push:
-  #   branches: [ main, develop ]
-  # pull_request:
-  #   branches: [ main ]
+  # DISABLED - This workflow uses old code without qt_setup fix
+  # Use "Working Release" instead
   workflow_dispatch:
 
 jobs:
