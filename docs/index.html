@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MarkLex Desktop - Marketing Lexicon Creation Tool</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-container">
+                <div class="logo">
+                    <img src="assets/marklex-logo.png" alt="MarkLex" height="40">
+                    <span>MarkLex Desktop</span>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#download">Download</a></li>
+                    <li><a href="#documentation">Documentation</a></li>
+                    <li><a href="https://github.com/sec-edgar-warranty/MarkLex-Standalone" target="_blank">GitHub</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h1>MarkLex Desktop</h1>
+                    <p class="hero-subtitle">Professional Marketing Lexicon Creation & Text Analysis</p>
+                    <p class="hero-description">
+                        A standalone desktop application for researchers, analysts, and marketers to create 
+                        comprehensive lexicons and analyze text for specific themes and keywords using 
+                        advanced Word2Vec embeddings.
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="#download" class="btn btn-primary">Download Now</a>
+                        <a href="https://github.com/sec-edgar-warranty/MarkLex-Standalone" class="btn btn-secondary" target="_blank">View Source</a>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <img src="assets/app-screenshot.png" alt="MarkLex Desktop Screenshot">
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <div class="container">
+                <h2>Key Features</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">📝</div>
+                        <h3>Lexicon Creation</h3>
+                        <p>Generate semantically similar terms based on seed words using advanced Word2Vec embeddings. Support for both unigrams and bigrams.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔬</div>
+                        <h3>Text Analysis</h3>
+                        <p>Analyze documents against eight business dimensions: Marketing, ESG, DEI, Risk & Security, Innovation, Operations, Finance, and HR.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Advanced Processing</h3>
+                        <p>Intelligent text processing with tokenization, N-gram analysis, sentence-level breakdown, and batch processing capabilities.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💻</div>
+                        <h3>Cross-Platform</h3>
+                        <p>Native desktop application for macOS, Windows, and Linux. No Python installation required for end users.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔒</div>
+                        <h3>Privacy First</h3>
+                        <p>All processing done locally on your machine. No user data transmitted to external servers. Download models once and work offline.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3>Export & Analysis</h3>
+                        <p>Export results as CSV files for further analysis. Detailed similarity scores and comprehensive text analysis reports.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="download" class="download">
+            <div class="container">
+                <h2>Download MarkLex Desktop</h2>
+                <p>Choose the version for your operating system:</p>
+                <div class="download-grid">
+                    <div class="download-card">
+                        <div class="download-icon">🍎</div>
+                        <h3>macOS</h3>
+                        <p>macOS 10.13 (High Sierra) or later</p>
+                        <a href="https://github.com/sec-edgar-warranty/MarkLex-Standalone/releases/latest/download/MarkLex-macOS.dmg" class="btn btn-download">Download DMG</a>
+                        <small>Intel & Apple Silicon supported</small>
+                    </div>
+                    <div class="download-card">
+                        <h3>Windows</h3>
+                        <div class="download-icon">🪟</div>
+                        <p>Windows 10 or later</p>
+                        <a href="https://github.com/sec-edgar-warranty/MarkLex-Standalone/releases/latest/download/MarkLex-Windows.exe" class="btn btn-download">Download EXE</a>
+                        <small>64-bit installer included</small>
+                    </div>
+                    <div class="download-card">
+                        <div class="download-icon">🐧</div>
+                        <h3>Linux</h3>
+                        <p>Ubuntu 18.04+ / Debian 10+ compatible</p>
+                        <a href="https://github.com/sec-edgar-warranty/MarkLex-Standalone/releases/latest/download/MarkLex-Linux.AppImage" class="btn btn-download">Download AppImage</a>
+                        <small>Portable executable</small>
+                    </div>
+                </div>
+                <div class="download-notes">
+                    <h4>System Requirements</h4>
+                    <ul>
+                        <li>At least 4GB RAM (8GB recommended)</li>
+                        <li>500MB free disk space for models</li>
+                        <li>Internet connection for initial model download</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="getting-started">
+            <div class="container">
+                <h2>Getting Started</h2>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <h3>Download & Install</h3>
+                        <p>Download the appropriate version for your operating system and install MarkLex Desktop.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <h3>Setup Models</h3>
+                        <p>Launch the app and go to the "Setup" tab to download the required Word2Vec embedding models (~300MB).</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <h3>Create Lexicons</h3>
+                        <p>Use the "Lexicon" tab to generate semantically similar terms from seed words. Export results as CSV.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <h3>Analyze Text</h3>
+                        <p>Upload documents in the "Text Analysis" tab to analyze against business dimensions and themes.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="research-applications">
+            <div class="container">
+                <h2>Research Applications</h2>
+                <div class="applications-grid">
+                    <div class="application">
+                        <h3>Academic Research</h3>
+                        <p>Content analysis, theme identification, systematic literature reviews, and qualitative data analysis.</p>
+                    </div>
+                    <div class="application">
+                        <h3>Business Intelligence</h3>
+                        <p>Market analysis, competitor monitoring, trend identification, and strategic planning support.</p>
+                    </div>
+                    <div class="application">
+                        <h3>Policy Research</h3>
+                        <p>Document analysis, regulatory compliance assessment, and stakeholder communication evaluation.</p>
+                    </div>
+                    <div class="application">
+                        <h3>Marketing Research</h3>
+                        <p>Brand analysis, campaign evaluation, consumer sentiment analysis, and content strategy development.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="documentation" class="documentation">
+            <div class="container">
+                <h2>Documentation</h2>
+                <div class="docs-grid">
+                    <div class="doc-card">
+                        <h3>User Guide</h3>
+                        <p>Comprehensive guide covering all features and workflows</p>
+                        <a href="https://github.com/sec-edgar-warranty/MarkLex-Standalone#readme" class="btn btn-outline">Read Guide</a>
+                    </div>
+                    <div class="doc-card">
+                        <h3>Developer Documentation</h3>
+                        <p>Build from source, contribute, and extend MarkLex Desktop</p>
+                        <a href="https://github.com/sec-edgar-warranty/MarkLex-Standalone/blob/main/README.md#development" class="btn btn-outline">Developer Docs</a>
+                    </div>
+                    <div class="doc-card">
+                        <h3>API Reference</h3>
+                        <p>Technical documentation for the core modules and classes</p>
+                        <a href="https://github.com/sec-edgar-warranty/MarkLex-Standalone/tree/main/src" class="btn btn-outline">View Source</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>MarkLex Desktop</h4>
+                    <p>Professional marketing lexicon creation and text analysis tool.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="https://github.com/sec-edgar-warranty/MarkLex-Standalone/releases">Releases</a></li>
+                        <li><a href="https://github.com/sec-edgar-warranty/MarkLex-Standalone/issues">Issues</a></li>
+                        <li><a href="https://github.com/sec-edgar-warranty/MarkLex-Standalone#readme">Documentation</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Open Source</h4>
+                    <ul>
+                        <li><a href="https://github.com/sec-edgar-warranty/MarkLex-Standalone">Source Code</a></li>
+                        <li><a href="https://github.com/sec-edgar-warranty/MarkLex-Standalone/blob/main/LICENSE">License</a></li>
+                        <li><a href="https://github.com/sec-edgar-warranty/MarkLex-Standalone/contributors">Contributors</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 MarkLex Desktop. Open source project.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
