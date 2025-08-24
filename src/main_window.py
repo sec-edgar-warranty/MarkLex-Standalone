@@ -2,13 +2,8 @@
 Main application window with tabbed interface
 """
 
-# CRITICAL: Import qt_setup first to set platform before any PyQt6 imports
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-import qt_setup  # This sets QT_QPA_PLATFORM before any PyQt6 imports
-
-# Now import PyQt6 - the platform should be set correctly by qt_setup
 from PyQt6.QtWidgets import (QMainWindow, QTabWidget, QVBoxLayout, 
                             QWidget, QMenuBar, QStatusBar, QMessageBox,
                             QApplication)
